@@ -28,7 +28,8 @@ var makeUrls = function(options) {
 
 var makeSrc = function(options, urls) {
 	var templates = {
-		eot: _.template('url("<%= url %>?#iefix") format("embedded-opentype")'),
+		eot1: _.template('url("<%= url %>")'), // ie9
+		eot: _.template('url("<%= url %>?#iefix") format("embedded-opentype")'), // ie6-ie8
 		woff: _.template('url("<%= url %>") format("woff")'),
 		ttf: _.template('url("<%= url %>") format("truetype")'),
 		svg: _.template('url("<%= url %>#<%= fontName %>") format("svg")')
@@ -37,16 +38,26 @@ var makeSrc = function(options, urls) {
 	// Order used types according to 'options.order'.
 	var orderedTypes = _.filter(options.order, function(type) {
 		return options.types.indexOf(type) !== -1
-	})
+	});
 
 	var src = _.map(orderedTypes, function(type) {
 		return templates[type]({
 			url: urls[type],
 			fontName: options.fontName
 		})
-	}).join(',\n')
+	});
+  // .join(',\n');
 
-	return src
+  if (orderedTypes.indexOf('eot') !== -1) {
+    src.unshift(
+      templates.eot1({
+        url: urls.eot,
+        fontName: options.fontName
+      })
+    );
+  }
+
+	return src.join(',\n')
 }
 
 var makeCtx = function(options, urls) {
