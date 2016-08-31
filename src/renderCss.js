@@ -28,7 +28,6 @@ var makeUrls = function(options) {
 
 var makeSrc = function(options, urls) {
 	var templates = {
-		eot1: _.template('url("<%= url %>")'), // ie9
 		eot: _.template('url("<%= url %>?#iefix") format("embedded-opentype")'), // ie6-ie8
 		woff: _.template('url("<%= url %>") format("woff")'),
 		ttf: _.template('url("<%= url %>") format("truetype")'),
@@ -48,17 +47,18 @@ var makeSrc = function(options, urls) {
 	});
   // .join(',\n');
 
-  if (orderedTypes.indexOf('eot') !== -1) {
-    src.unshift(
-      templates.eot1({
-        url: urls.eot,
-        fontName: options.fontName
-      })
-    );
-  }
-
 	return src.join(',\n')
 }
+var makeEotSrc = function (options, urls) {
+	var eot = _.template('url("<%= url %>")') // ie9
+
+	var src = eot({
+    url: urls.eot,
+    fontName: options.fontName
+  });
+
+	return src;
+};
 
 var makeCtx = function(options, urls) {
 	// Transform codepoints to hex strings
@@ -68,6 +68,7 @@ var makeCtx = function(options, urls) {
 
 	return _.extend({
 		fontName: options.fontName,
+    eotSrc: makeEotSrc(options, urls),
 		src: makeSrc(options, urls),
 		codepoints: codepoints
 	}, options.templateOptions)
